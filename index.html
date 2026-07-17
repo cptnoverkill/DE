@@ -321,6 +321,12 @@ table.ndeform tr.ndesub td{background:#d9d9d9;font-weight:700;text-align:center}
 table.ndeform tr.ndesub2 td{background:#dbe5f1;font-weight:700;text-align:center}
 table.ndeform button.ndex{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:1px solid var(--line2);
   background:#fff;border-radius:3px;width:16px;height:16px;line-height:1;font-size:10px;padding:0;cursor:pointer;color:var(--ink3)}
+/* a 16px hit target is under the ~44px a fingertip needs — grow them on touch */
+@media (hover:none){
+  table.ndeform button.ndex{width:26px;height:26px;font-size:13px}
+  .rpthumbs .rpx{width:28px;height:28px;font-size:14px}
+  .rpbar .tb-btn{min-height:38px}
+}
 table.ndeform button.ndex:hover{background:var(--acc);color:#fff;border-color:var(--acc)}
 table.ndeform td.ndelab input{font-weight:600;padding-right:20px}
 table.ndeform td.ndemail{color:#0563c1;text-decoration:underline}
@@ -329,9 +335,40 @@ table.ndeform td.ndebul li{font-size:.7rem}
 table.ndeform .fine{font-size:.64rem;font-weight:400;color:var(--ink3)}
 table.ndeform input,table.ndeform select,table.ndeform textarea{width:100%;border:0;background:transparent;padding:1px 2px;font-size:.76rem}
 table.ndeform input:focus,table.ndeform select:focus,table.ndeform textarea:focus{background:#fffbe6;outline:1px solid var(--acc)}
+/* On a phone the request form is 4 fixed columns inside ~380px — about 87px
+   each, which is unusable. Let it keep its real width and scroll instead of
+   crushing every field; the form's shape is part of how it reads. */
+@media (max-width:760px){
+  #ndereq-body,#derange-body{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #ndereq-body table.ndeform,#derange-body table.ndeform{min-width:680px}
+}
 table.ndeform.print{font-size:8.6px}
 table.ndeform.print td{padding:2px 3px}
 table.ndeform.print .fine{font-size:7px;color:#555}
+/* read-photo strips */
+.rpstrip{border-top:1px dashed var(--line2);margin-top:10px;padding-top:8px}
+.rpbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rpstrip.hot{outline:2px dashed var(--acc);outline-offset:3px;background:var(--acc-bg,#f0f6ff)}
+.rpstrip.hot .rpdz{border-color:var(--acc);color:var(--acc);background:#fff}
+/* the drop hint is pointless on a touch device, where there is nothing to drag
+   from — the camera and library buttons are the whole story there */
+.rpdz{border:1px dashed var(--line2);border-radius:4px;color:var(--ink3);font-size:.72rem;
+  text-align:center;padding:6px;margin-top:8px}
+@media (hover:none){.rpdz{display:none}}
+.rpstrip .fine{font-size:.7rem;color:var(--ink3);margin-left:8px}
+.rpthumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.rpthumbs figure{margin:0;width:132px;position:relative}
+.rpthumbs img{width:132px;height:96px;object-fit:cover;border:1px solid var(--line2);border-radius:3px;cursor:zoom-in;display:block;background:#fff}
+.rpthumbs input{width:132px;font-size:.66rem;margin-top:3px;padding:2px 3px}
+.rpthumbs .rpx{position:absolute;top:2px;right:2px;border:0;background:rgba(0,0,0,.6);color:#fff;
+  border-radius:3px;width:17px;height:17px;line-height:1;font-size:10px;padding:0;cursor:pointer}
+.rpthumbs .rpx:hover{background:var(--fail)}
+/* printed read-photo pages */
+.rpgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rpgrid figure{margin:0;border:1px solid #000;padding:4px;break-inside:avoid}
+.rpgrid img{width:100%;height:auto;display:block}
+.rpgrid figcaption{font-size:8.5px;padding-top:3px;text-align:center}
+.rpsec{background:#d9d9d9;font-weight:700;font-size:10px;padding:3px 5px;border:1px solid #000;margin:8px 0 6px}
 table.r-grid{width:100%;font-size:10px}
 table.r-grid th,table.r-grid td{border:1px solid #000;padding:2px 4px;text-align:center}
 table.r-grid th{background:var(--rp-hdrbg);color:var(--rp-hdrfg);font-size:9.5px}
@@ -573,6 +610,26 @@ const DE_RANGE_ROWS=[
   ['coat','Primary Coating Type per PG&E','coatingType']
 ];
 /* what the bell hole is cut against at each end — drawn on the H3 elevation */
+/* ---- read photos -----------------------------------------------------------
+   A number on a form is an assertion; a photo of the meter showing it is
+   evidence. Every card that records a measurement gets a strip where the
+   reading's own photo can be attached — the half-cell display, the pH strip
+   against its chart, the tape on the probe rod. Keyed by reading, not dumped
+   into the general photo log, so each shot stays next to the number it backs up
+   and prints beside it.
+   [key, label, hint] — the hint is what the shot should actually show. */
+const READ_PHOTOS=[
+  ['doc',   'Depth of cover',            'tape or probe rod at US / center / DS'],
+  ['ps',    'Pipe-to-soil potential',    'meter display for each clock position'],
+  ['ac',    'AC reading',                'meter display'],
+  ['soilres','Soil resistivity',         '4-pin meter or soil box display, and the pin spacing'],
+  ['soilph','Soil pH',                   'strip or probe against the chart, US and DS'],
+  ['gwph',  'Groundwater pH',            'strip or probe against the chart'],
+  ['liqph', 'Liquid-under-coating pH',   'strip or probe against the chart'],
+  ['incl',  'Inclination',               'inclinometer / smart level at US, center, DS'],
+  ['ditch', 'Ditch depth',               'tape from grade to the bottom of the ditch']
+];
+const readPhotoLabel=k=>(READ_PHOTOS.find(x=>x[0]===k)||[k,k])[1];
 const PIT_ENDS=['Dirt wall','Sloped dirt','Vault wall','Shoring / trench box','Sheet piling','Casing end','Open / continues','None'];
 const TECH_FIELDS=[['lan','LAN ID'],['email','Email'],['phone','Phone'],['yokeBrand','Yoke brand'],['yokeModel','Yoke model'],['yokeSN','Yoke S/N'],['yokeCal','Yoke cal due','date'],['wfmtMedium','WFMT medium'],['wfmtBatch','WFMT batch'],['blBrand','Blacklight brand'],['blModel','Blacklight model'],['blSN','Blacklight S/N'],['lmBrand','Light meter brand'],['lmModel','Light meter model'],['lmSN','Light meter S/N'],['detSN','Detector S/N'],['lmCal','Light meter cal due','date'],['utUnit','UT scope (brand/model)'],['utSN','UT scope S/N'],['utCal','UT scope cal due','date'],['probeBrand','Probe brand'],['probeModel','Probe model'],['probeSN','Probe S/N'],['probeFreq','Probe freq (MHz)'],['probeDiam','Probe diameter (in)'],['couplant','Couplant'],['couplantBatch','Couplant batch'],['wedgeSN','Step wedge S/N'],['pitGauge','Pit gauge (brand/model)'],['pitSN','Pit gauge S/N'],['pitCal','Pit gauge cal due','date'],['mmBrand','Multimeter'],['mmSN','Multimeter S/N'],['mmCal','Multimeter cal due','date'],['gpsBrand','GPS brand'],['gpsModel','GPS model'],['gpsSN','GPS S/N']];
 const TECH_DEFAULTS = {
@@ -1120,6 +1177,25 @@ function ndeReqPage(){
   return h;
 }
 /* ---------- printed sheet: the same table, values only ---------- */
+/* Printed as its own section, grouped by reading and in the order the readings
+   appear on the H-forms, so a reviewer can go value -> evidence without hunting.
+   Two-up, which is what the other photo pages in this report use. */
+function rReadPhotos(){
+  const sets=READ_PHOTOS.map(([k,label,hint])=>[k,label,hint,(D.readPhotos&&D.readPhotos[k])||[]])
+    .filter(x=>x[3].length);
+  if(!sets.length)return '';
+  const n=sets.reduce((a,x)=>a+x[3].length,0);
+  let h=`<div class="rpage"><div style="display:flex;align-items:center;gap:20px;margin-bottom:6px">${brandBlock()}
+    <div style="flex:1;text-align:center;font-size:20px;font-weight:600">Field Read Photographs</div></div>
+    ${rHeaderStrip()}
+    <p style="font-size:9px;margin:4px 0 8px">${n} photograph${n!==1?'s':''} of instrument readings taken at the dig site, grouped by measurement.</p>`;
+  sets.forEach(([k,label,hint,list])=>{
+    h+=`<div class="rpsec">${rEsc(label)}${hint?` <span style="font-weight:400;font-size:8.5px">\u2014 ${rEsc(hint)}</span>`:''}</div>`;
+    h+=`<div class="rpgrid">`+list.map((p,i)=>`<figure><img src="${p.img}">
+      <figcaption><b>${rEsc(label)} ${i+1}</b>${p.cap?' \u2014 '+rEsc(p.cap):''}</figcaption></figure>`).join('')+`</div>`;
+  });
+  return h+'</div>';
+}
 function rNdeReq(){
   const R=D.ndeReq;
   const v=x=>rEsc(String(x??'').trim());
@@ -1177,7 +1253,7 @@ function renderNdeReq(){ const el=$('#ndereq-body'); if(el)el.innerHTML=ndeReqPa
 const DEFAULT = ()=>({
   meta:{rev:'20.9.3-web',saved:null,autosaved:null},
   roster:null,
-  report:{theme:'acuren',include:{cover:1,details:1,ss:1,sl:1,hform:1,indmap:1,coatmap:1,gps:1,mt:1,ut:1,acid:1,lsc:0,ind:1,digmap:0,casing:0,ng8:0,ng9:0,ndereq:0,photorep:1}, photoPer:1},
+  report:{theme:'acuren',include:{cover:1,details:1,ss:1,sl:1,hform:1,indmap:1,coatmap:1,gps:1,mt:1,ut:1,acid:1,lsc:0,ind:1,digmap:0,casing:0,ng8:0,ng9:0,ndereq:0,readphotos:1,photorep:1}, photoPer:1},
   siteMap:{mode:'Satellite', source:'Esri World Imagery', zoom:'', label:'', arrow:'Yes',
            labels:'All points', labelText:'Label + description', labelSize:'10.5',
            markerSize:'4.5', showLine:'Yes', showScale:'Yes', showNorth:'Yes', showCaption:'Yes'},
@@ -1271,6 +1347,7 @@ const DEFAULT = ()=>({
   iliImport:{start:'', end:'', scope:'Anomalies only', file:'', sheet:''},
   ndeReq:blankNdeReq(),
   deRanges:{},
+  readPhotos:{},
   gps:{unit:'', serial:'', refDoc:'DA Dig Sheet', view:'elevation', rows:[{label:'GPS-REF',desc:'Reference Point',refFt:'0',lat:'',lon:''}],
        baseline:{ptA:'',latA:'',lonA:'',ptB:'',latB:'',lonB:'',distFt:''}},
   h10:{
@@ -1865,7 +1942,7 @@ function buildPages(){
       fld('h1.docUS','US end of excavation','number',{un:'ft',step:'any'})+
       fld('h1.docCtr','Center of excavation','number',{un:'ft',step:'any'})+
       fld('h1.docDS','DS end of excavation','number',{un:'ft',step:'any'})
-    }</div>`)
+    }</div>`+readSlot('doc'))
    +card('1.2','Coating as found',`<div class="fgrid">${
       checks('h1.coatingTypeFound','Coating type',['HAA','Somastic','Plastic Tape','Wax Tape','FBE','2-Part Epoxy','Bare/None','Paint','Other'])+
       fld('h1.coatingThk','Coating thickness','number',{un:'in',step:'any'})+
@@ -1890,7 +1967,7 @@ function buildPages(){
       fld('h1.acReading','AC reading','number',{un:'mV',step:'any'})+
       fld('h1.psTime','Time','time')+fld('h1.psDate','Date','date')+
       fld('h1.cpNotes','CP notes','textarea',{w:'w3',rows:2,ph:'e.g. CP appears to be low at time of inspection, unable to verify.'})
-    }</div>`)
+    }</div>`+readSlot('ps')+readSlot('ac'))
    +card('1.5','Soil resistivity',`<div class="fgrid">${
       fld('h1.pin4Ohms','4-pin reading','number',{un:'Ω',step:'any',attr:' data-res="1"'})+
       fld('h1.pin4Mult','4-pin multiplier','number',{step:'any',attr:' data-res="1"'})+
@@ -1901,7 +1978,7 @@ function buildPages(){
       fld('h1.boxMult','Soil box multiplier','number',{step:'any',attr:' data-res="1"'})+
       fld('h1.boxRes','Soil box resistivity','text',{un:'Ω-cm',attr:' readonly'})+
       fld('h1.resComments','Resistivity comments','textarea',{w:'w3',rows:2})
-    }</div><div id="pin4-work" style="font-family:var(--mono);font-size:.74rem;color:var(--ink2);margin-top:8px"></div>`,
+    }</div><div id="pin4-work" style="font-family:var(--mono);font-size:.74rem;color:var(--ink2);margin-top:8px"></div>`+readSlot('soilres'),
     '4-pin uses the Wenner array formula ρ = 2πaR (ρ in Ω·cm) — the pin spacing drives the result, so it is required. Soil box is reading × range multiplier. 4-pin preferred, up to 50 yds from the dig site.')
    +card('2.0','Soil sample, groundwater & corrosion product — continued (H2)',`<div class="fgrid">${
       fld('h1.soilPHUS','Soil pH — upstream','number',{step:'any'})+
@@ -1919,7 +1996,7 @@ function buildPages(){
       fld('h1.corrProductComments','Corrosion product comments','textarea',{w:'w2',rows:2})+
       fld('h1.coatingSampleTaken','Coating sample taken?','select',{list:LISTS.ynNA})+
       fld('h1.coatingSampleLoc','Coating sample location')
-    }</div>`)
+    }</div>`+readSlot('soilph')+readSlot('gwph')+readSlot('liqph'))
    +card('1.8','Coating condition &amp; disbondment',`<div class="fgrid">${
       fld('h1.coatingCondition','Coating condition','select',{list:['','Excellent','Good','Fair','Poor']})+
       fld('h1.pctCoatingDamage','Percentage of coating damage observed','number',{un:'%',step:'any'})+
@@ -1964,7 +2041,7 @@ function buildPages(){
       fld('h1.docDS','Depth of cover — DS','number',{un:'ft (from H1)',step:'any',attr:' readonly title="Set on H1 — Depth of cover"'})+
       fld('profile.ditchDepth','Ditch depth','number',{un:'ft',step:'any'})+
       fld('profile.comments','Inclination & depth comments','textarea',{w:'w2',rows:2,ph:'e.g. Inclination shifts (from - to +) after the GW @ 6.96 ft.'})
-    }</div>`)
+    }</div>`+readSlot('incl')+readSlot('ditch'))
    +card('','Flow & stationing',`<div class="fgrid">${
       fld('profile.flowFrom','Flow from','select',{list:['East','West','North','South']})+
       fld('profile.flowTo','Flow to','select',{list:['West','East','South','North']})+
@@ -3331,7 +3408,7 @@ html+=`<section class="page" id="pg-h6">
           <option value="mono">Monochrome Serif (engineering minimal)</option>
         </select></div>
       <div class="fld"><label>Documents included</label><div style="display:flex;flex-wrap:wrap;gap:4px 14px;padding-top:4px">${
-        [['cover','Cover'],['details','Project Details'],['ss','Site Summary'],['sl','Site Log'],['hform',`Full data sheet (pp. 1–${opPages()})`],['ind','Indication Table'],['indmap','Indication Map'],['coatmap','Coating Map'],['gps','GPS Sheet'],['mt','MT Report'],['ut','UT Report'],['acid','Acid Etch'],['lsc','Pipe Characterization'],['casing','Casing Data (5.0 / 6.0)'],['digmap','Dig Location Overview'],['ng8','NG Att. 8 \u2014 Inspection Form (pp. 1\u20135)'],['ng9','NG Att. 9 \u2014 UT Wall Thickness'],['ndereq','GO NDE Services Request'],['photorep','Photo Report (one per page, at the end)']]
+        [['cover','Cover'],['details','Project Details'],['ss','Site Summary'],['sl','Site Log'],['hform',`Full data sheet (pp. 1–${opPages()})`],['ind','Indication Table'],['indmap','Indication Map'],['coatmap','Coating Map'],['gps','GPS Sheet'],['mt','MT Report'],['ut','UT Report'],['acid','Acid Etch'],['lsc','Pipe Characterization'],['casing','Casing Data (5.0 / 6.0)'],['digmap','Dig Location Overview'],['ng8','NG Att. 8 \u2014 Inspection Form (pp. 1\u20135)'],['ng9','NG Att. 9 \u2014 UT Wall Thickness'],['ndereq','GO NDE Services Request'],['readphotos','Field Read Photographs'],['photorep','Photo Report (one per page, at the end)']]
         .map(([k,l])=>`<label style="font-size:.78rem;display:inline-flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" data-inc="${k}" style="width:auto">${l}</label>`).join('')
       }</div></div>
       <button class="tb-btn pri" id="btn-printreport" style="font-size:.9rem;padding:.6em 1.4em;align-self:flex-end">Print / Save as PDF</button>
@@ -3940,6 +4017,46 @@ function applyStationing(force){
     const el=$(`input[data-p="profile.${k}"]`); if(el)el.value=D.profile[k]; });}
   return n;
 }
+/* One strip per reading. Rendered into a placeholder so a photo added on one
+   card never forces the whole page to redraw. */
+function readStrip(key){
+  const R=(D.readPhotos&&D.readPhotos[key])||[];
+  const meta=READ_PHOTOS.find(x=>x[0]===key)||[key,key,''];
+  /* Two inputs, not one. `capture` tells the browser to go straight to the
+     camera — which on iOS and Android also takes the photo library away, so a
+     single capture-enabled button means a shot already on the phone cannot be
+     attached at all. The plain input lets the OS offer Camera / Library / Files;
+     the camera one is the shortcut for taking it now. */
+  return `<div class="rpstrip noprint" data-rpdrop="${key}">
+    <div class="rpbar">
+      <button class="tb-btn" data-rpadd="${key}">\u21a5 Choose photo\u2026</button>
+      <button class="tb-btn rpcam" data-rpcam="${key}">\u25c9 Take photo</button>
+      <span class="fine">${R.length?`<b>${R.length}</b> attached`:'none yet'} \u00b7 ${esc(meta[2])}</span>
+    </div>
+    <div class="rpdz"><span>Drop photos here</span></div>
+    <div class="rpthumbs">${R.map((p,i)=>`<figure>
+      <img src="${p.img}" alt="${esc(p.cap||meta[1])}" data-rpview="${key}:${i}" title="Click to view full size">
+      <input type="text" data-p="readPhotos.${key}[${i}].cap" value="${esc(p.cap||'')}" placeholder="caption \u2014 e.g. US end, 3.2 ft">
+      <button class="rpx" data-rpdel="${key}:${i}" title="Remove">\u2715</button>
+    </figure>`).join('')}</div></div>`;
+}
+/* One path for the button, the camera and a drop — so all three downscale,
+   caption and store identically. */
+async function addReadPhotos(key,files){
+  if(!key||!files||!files.length)return 0;
+  D.readPhotos[key]=D.readPhotos[key]||[];
+  let n=0;
+  for(const f of files){
+    try{ D.readPhotos[key].push({img:await ingestPhoto(f),cap:'',ts:new Date().toISOString()}); n++; }
+    catch(err){ alert('Could not read '+(f.name||'that image')+': '+err.message); }
+  }
+  if(n){ markDirty(); renderReadStrips(); }
+  return n;
+}
+function renderReadStrips(){
+  $$('[data-rpslot]').forEach(el=>{ el.innerHTML=readStrip(el.dataset.rpslot); });
+}
+const readSlot=k=>`<div data-rpslot="${k}"></div>`;
 function renderDeRanges(){
   const cd=$('#card-M2r'), el=$('#derange-body');
   const on=/100% DE/i.test(D.master.testProgram||'');
@@ -5259,6 +5376,7 @@ function buildReportPages(){
   if(inc.coatmap)h+=rMapPage('coat');
   if(inc.gps)h+=rGPS();
   if(inc.ndereq)h+=rNdeReq();
+  if(inc.readphotos)h+=rReadPhotos();
   if(inc.mt)h+=rMT();
   if(inc.ut)h+=rUT();
   if(inc.acid)h+=rAcid();
@@ -7375,10 +7493,18 @@ function ng9ClockFaceSVG(g){
 const PHOTO_MAX_DIM=1400, PHOTO_QUALITY=0.82;
 function downscaleImage(src,maxDim=PHOTO_MAX_DIM,quality=PHOTO_QUALITY){
   return new Promise((resolve,reject)=>{
+    /* An <img> that never fires load or error leaves this promise pending for
+       good, and the caller awaits it forever — the photo just never appears, with
+       nothing said. Decoders do stall on the odd huge or malformed file, so bound
+       it: on timeout reject, and ingestPhoto falls back to the original bytes the
+       same way it already does for SVG. Better a full-size photo than none. */
+    let done=false;
+    const finish=(fn,v)=>{ if(done)return; done=true; clearTimeout(timer); fn(v); };
+    const timer=setTimeout(()=>finish(reject,new Error('image decode timed out')),15000);
     const im=new Image();
     im.onload=()=>{
       let {width:w,height:h}=im;
-      if(!w||!h)return reject(new Error('image has no dimensions'));
+      if(!w||!h)return finish(reject,new Error('image has no dimensions'));
       const sc=Math.min(1,maxDim/Math.max(w,h));
       w=Math.round(w*sc); h=Math.round(h*sc);
       const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
@@ -7386,9 +7512,9 @@ function downscaleImage(src,maxDim=PHOTO_MAX_DIM,quality=PHOTO_QUALITY){
       /* JPEG has no alpha — flatten onto white or PNG screenshots go black */
       cx.fillStyle='#fff'; cx.fillRect(0,0,w,h);
       cx.drawImage(im,0,0,w,h);
-      try{ resolve(cv.toDataURL('image/jpeg',quality)); }catch(err){ reject(err); }
+      try{ finish(resolve,cv.toDataURL('image/jpeg',quality)); }catch(err){ finish(reject,err); }
     };
-    im.onerror=()=>reject(new Error('could not decode image'));
+    im.onerror=()=>finish(reject,new Error('could not decode image'));
     im.src=src;
   });
 }
@@ -7826,6 +7952,7 @@ function refresh(scope){
   if(!scope||scope==='h9'){renderPhotoWeight();phaseCounts();foldBtns();}
   if(!scope||scope==='lsc'){renderLscPhotos();renderLscTechNote();}
   if(!scope||scope==='h3')renderStationNote();
+  renderReadStrips();
   if(!scope||scope==='ndereq')renderNdeReq();
   if(!scope||scope==='master')renderDeRanges();
   if(!scope||scope==='map'||scope==='h7'||scope==='h3')renderMaps();
@@ -8034,6 +8161,7 @@ function applyLoaded(obj){
       }
       D.ndeReq=Object.assign(blankNdeReq(),nr);
       D.deRanges=D.deRanges||{};
+      D.readPhotos=D.readPhotos||{};
       if(!D.profile.endUS)D.profile.endUS='Dirt wall';
       if(!D.profile.endDS)D.profile.endDS='Dirt wall';
       ILI_TALLY=null;
@@ -8665,6 +8793,28 @@ document.addEventListener('click',e=>{
     D.master.ccEmails=zoneEmails(z).join('; ');
     nav('exports');
     return;}
+  const rpa=e.target.closest('[data-rpadd]');
+  if(rpa){ RP_TARGET=rpa.dataset.rpadd; $('#rp-in').click(); return; }
+  const rpc=e.target.closest('[data-rpcam]');
+  if(rpc){ RP_TARGET=rpc.dataset.rpcam; $('#rp-cam').click(); return; }
+  const rpd=e.target.closest('[data-rpdel]');
+  if(rpd){
+    const [k,i]=rpd.dataset.rpdel.split(':');
+    if(!confirm('Remove this photo?'))return;
+    (D.readPhotos[k]||[]).splice(+i,1);
+    if(!D.readPhotos[k].length)delete D.readPhotos[k];
+    markDirty(); renderReadStrips(); return;
+  }
+  const rpv=e.target.closest('[data-rpview]');
+  if(rpv){
+    const [k,i]=rpv.dataset.rpview.split(':');
+    const p=(D.readPhotos[k]||[])[+i]; if(!p)return;
+    const wnd=window.open('','_blank');
+    if(wnd)wnd.document.write(`<title>${esc(readPhotoLabel(k))}</title>
+      <body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh">
+      <img src="${p.img}" style="max-width:100%;max-height:100%">`);
+    return;
+  }
   const lg=e.target.closest('#btn-locfromgps,[data-locgeo]');
   if(lg){
     const force=lg.dataset&&lg.dataset.locgeo==='force';
@@ -9422,7 +9572,7 @@ function corrPullAll(force){
 /* --- ILI tally -> correlation table ------------------------------------------
    The parsed tally is deliberately kept out of D: it is thousands of rows and
    D goes to localStorage on every edit. Only the window settings persist. */
-let ILI_TALLY=null;
+let ILI_TALLY=null, RP_TARGET='';
 
 function iliWindow(){
   const a=num(D.iliImport.start), b=num(D.iliImport.end);
@@ -9817,6 +9967,11 @@ document.addEventListener('change',async e=>{
     await creaformImport(files,mode);
     return;
   }
+  if((e.target.id==='rp-in'||e.target.id==='rp-cam')&&e.target.files.length){
+    const files=[...e.target.files], k=RP_TARGET; e.target.value='';
+    if(k)await addReadPhotos(k,files);
+    return;
+  }
   if(e.target.id==='ili-in'&&e.target.files[0]){
     const f=e.target.files[0]; e.target.value='';
     await iliLoadFile(f);
@@ -9826,12 +9981,32 @@ document.addEventListener('change',async e=>{
 
 /* drag & drop onto either drop zone */
 document.addEventListener('dragover',e=>{
+  /* each read strip is its own target, so a photo dropped on the pH card lands
+     on the pH reading rather than in a general pile to be sorted out later */
+  const rp=e.target.closest('[data-rpdrop]');
+  if(rp){ e.preventDefault(); e.dataTransfer.dropEffect='copy'; rp.classList.add('hot'); return; }
   const z=e.target.closest('.dropz'); if(!z)return;
   e.preventDefault(); z.classList.add('hot');
 });
 document.addEventListener('dragleave',e=>{
+  const rp=e.target.closest('[data-rpdrop]');
+  /* dragleave fires when the pointer crosses a child, so only clear when it has
+     actually left the strip */
+  if(rp&&!rp.contains(e.relatedTarget))rp.classList.remove('hot');
   const z=e.target.closest('.dropz'); if(z)z.classList.remove('hot');
 });
+document.addEventListener('drop',async e=>{
+  const rp=e.target.closest('[data-rpdrop]'); if(!rp)return;
+  e.preventDefault(); e.stopPropagation(); rp.classList.remove('hot');
+  const k=rp.dataset.rpdrop;
+  const files=[...(e.dataTransfer.files||[])].filter(f=>/^image\//.test(f.type));
+  if(!files.length){
+    const skipped=[...(e.dataTransfer.files||[])].length;
+    alert(skipped?'That is not an image — read photos take image files only.':'Nothing to add.');
+    return;
+  }
+  await addReadPhotos(k,files);
+},true);
 document.addEventListener('drop',async e=>{
   const z=e.target.closest('.dropz'); if(!z)return;
   e.preventDefault(); z.classList.remove('hot');
@@ -10102,5 +10277,7 @@ checkAutosave();        /* offer to restore unsaved work from a crash or close *
 <input type="file" id="ppt-in" accept=".pptx,.pptm,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
 <input type="file" id="creaform-in" accept=".csv,text/csv" multiple hidden>
 <input type="file" id="ili-in" accept=".xlsx,.xlsm,.csv,.txt,.tsv" hidden>
+<input type="file" id="rp-in" accept="image/*" multiple hidden>
+<input type="file" id="rp-cam" accept="image/*" capture="environment" multiple hidden>
 </body>
 </html>
